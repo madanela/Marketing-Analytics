@@ -7,4 +7,10 @@ To provide insights on how the model works, we will present the findings using a
 
 **Methods used** <br />
 
-* A/B testing
+* A/B testing <br />
+* Statistics/ Probability
+* Machine learning
+
+**Packages used** <br />
+* Python, Jupyter Notebook
+* Numpy, Pandas
