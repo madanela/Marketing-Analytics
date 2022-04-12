@@ -14,6 +14,8 @@ To provide insights on how the model works, we will present the findings using a
 **Packages used** <br />
 * Python, Jupyter Notebook
 * Numpy, Pandas
+* Statsmodels
+* Seaborn, Matplotlib
 
 
 **What is this repository for?** <br />
