@@ -14,3 +14,7 @@ To provide insights on how the model works, we will present the findings using a
 **Packages used** <br />
 * Python, Jupyter Notebook
 * Numpy, Pandas
+
+
+**What is this repository for?** <br />
+* In case a marketing specialist wants to test which version of a website receives higher click - through rate or generally more visits, they will upload the dataset and the tool will run the tests
