@@ -137,38 +137,16 @@ def layout(params):
             ),
             dbc.Row( # Visualisation  
                 [
-                    dbc.Col([
-                        dbc.Card(
-                            [
-                                dbc.CardHeader("Some points on a chart"),
-                                dbc.CardBody(
-                                    [
-                                        dcc.Graph(
-                                            figure=utils.empty_figure(),
-                                            id=__package__ + "-chart",
-                                            config={"displayModeBar": False},
-                                        )
-                                    ],
-                                ),
-                            ],
-                        ),
-                    ]),
-                    dbc.Col([
-                        dbc.Card(
-                            [
-                                dbc.CardHeader("Some points on a chart"),
-                                dbc.CardBody(
-                                    [
-                                        dcc.Graph(
-                                            figure=utils.empty_figure(),
-                                            id=__package__ + "-chart",
-                                            config={"displayModeBar": False},
-                                        )
-                                    ],
-                                ),
-                            ],
-                        ),
-                    ]),
+                    dbc.Tabs(
+                        [
+                            dbc.Tab(label="Visualisation", tab_id="vis"),
+                            dbc.Tab(label="Statistics", tab_id="stat"),
+                            dbc.Tab(label="Cross_Table", tab_id="crosstable"),
+
+                        ],
+                        id="tabs",
+                        active_tab="scatter",
+                    ),
                 ],
                 class_name="pd-2",
             ),

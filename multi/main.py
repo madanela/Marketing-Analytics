@@ -68,4 +68,5 @@ def display_page(url_path, search):
 
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", threaded=True, debug=True, port=8081)
+    app.run_server(debug=False, host='0.0.0.0', port = 8080)
+
