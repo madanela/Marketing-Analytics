@@ -11,7 +11,9 @@ import pandas_datareader.data as web
 # from components.data import options
 import pandas as pd
 
-
+class data_class:
+    df = pd.DataFrame()
+var = data_class
 
 def layout(params):
     # This function must return a layout for the page
@@ -24,6 +26,7 @@ def layout(params):
                 [   
                     dbc.Card(
                         [
+                            dbc.Row(id = 'hidden-div',style = {'display':'none'}),
                             dbc.CardHeader("Select Generation Parameters"),
                             
                             dbc.CardBody(
@@ -44,7 +47,7 @@ def layout(params):
                                                     dbc.InputGroupText("Number of Treatment Groups"),
                                                     dbc.Input(placeholder="Enter",
                                                               type="number",
-                                                              id = 'group_number'),
+                                                              id = 'num_of_groups'),
                                                 ],
                                                 className="mb-3",
                                             )
@@ -56,7 +59,7 @@ def layout(params):
                                                     dbc.InputGroupText("Number of Datapoints"),
                                                     dbc.Input(placeholder="Enter", 
                                                               type="number",
-                                                              id = 'datapoint_number'),
+                                                              id = 'num_of_datapoints'),
                                                 ],
                                                 className="mb-3",
                                             )
@@ -65,10 +68,10 @@ def layout(params):
                                          dbc.Col([
                                             dbc.InputGroup(
                                                 [
-                                                    dbc.InputGroupText("Number of Features"),
+                                                    dbc.InputGroupText("Minimum cost per group"),
                                                     dbc.Input(placeholder="Enter", 
                                                               type="number",
-                                                              id = 'feature_number'),
+                                                              id = 'mn_cost'),
                                                 ],
                                                 className="mb-3",
                                             )
@@ -76,10 +79,21 @@ def layout(params):
                                           dbc.Col([
                                             dbc.InputGroup(
                                                 [
-                                                    dbc.InputGroupText("Number of Features"),
+                                                    dbc.InputGroupText("Maximum cost per group"),
                                                     dbc.Input(placeholder="Enter", 
                                                               type="number",
-                                                              id = 'feature_number'),
+                                                              id = 'mx_cost'),
+                                                ],
+                                                className="mb-3",
+                                            )
+                                        ]),
+                                          dbc.Col([
+                                            dbc.InputGroup(
+                                                [
+                                                    dbc.InputGroupText("Gain per group"),
+                                                    dbc.Input(placeholder="Enter", 
+                                                              type="number",
+                                                              id = 'gain'),
                                                 ],
                                                 className="mb-3",
                                             )
@@ -93,93 +107,59 @@ def layout(params):
                 ],
                 class_name="pd-2",
             ),
-             dbc.Row( # Select which option to use parameters
-                [   
-                    dbc.Card(
-                        [
-                            dbc.CardHeader("Select The Tool"),
-                            
-                            dbc.CardBody(
-                                dbc.Row([
-                                    # Visualisation
-                                    dbc.Col([
-                                        dbc.Label("Choose Which option to use"),
-                                        dbc.RadioItems(
-                                            options=[
-                                                {"label": "Option 1", "value": 1},
-                                                {"label": "Option 2", "value": 2},
-                                            ],
-                                            value=1,
-                                            id="radioitems-inline-input",
-                                            inline=True,
-                                        ),
-                                    ]),
-                                    # Statistics
-                                    dbc.Col([
-                                        dbc.Label("Choose Which option to use"),
-                                        dbc.RadioItems(
-                                            options=[
-                                                {"label": "Option 1", "value": 1},
-                                                {"label": "Option 2", "value": 2},
-                                            ],
-                                            value=1,
-                                            id="radioitems-inline-input",
-                                            inline=True,
-                                        ),
-                                    ]),
-                                ])
-                            ),
-                        ],
-                    ),
-                    html.Br(),
-                ],
-                class_name="pd-2",
-            ),
-            dbc.Row( # Visualisation  
-                [
-                    dbc.Tabs(
-                        [
-                            dbc.Tab(label="Visualisation", tab_id="vis"),
-                            dbc.Tab(label="Statistics", tab_id="stat"),
-                            dbc.Tab(label="Cross_Table", tab_id="crosstable"),
+            dbc.Row( # Tabs  
+                html.Div([
+                    dcc.Tabs(id = "tabs_inp",value = 'vis',
+                        children = [
+                            dcc.Tab(label="Visualisation", value="vis"),
+                            dcc.Tab(label="Statistics", value="stat"),
+                            dcc.Tab(label="Cross_Table", value="crosstable"),
 
-                        ],
-                        id="tabs",
-                        active_tab="scatter",
+                        ]
                     ),
-                ],
+                    html.Div(id='tabs-content-out')
+                ]),
                 class_name="pd-2",
             ),
-        ],
+        ],  
         class_name="mx-5 mt-5",
     )
-
 from app import app
 from random import random
+from basic_page.tab1 import layout1
+from basic_page.tab2 import layout2
+from basic_page.tab3 import layout3
+@app.callback(Output('tabs-content-out', 'children'),
+              [Input('tabs_inp', 'value')])
+def render_content(tab):
+    if tab == 'vis':
+        return  layout1(var.df)
+    elif tab == 'stat':
+       return layout2
+    elif tab == 'crosstable':
+       return layout3
+
 
 import dash
-# Any callbacks for the page should go here
+
+from data_gen.Generator import generate_dataset,generte_treatment_results
+## generate button_click
+
 @app.callback(
-    dash.dependencies.Output(__package__ + "-chart", "figure"),
-    [dash.dependencies.Input(__package__ + "-button", "n_clicks")],
+    Output("hidden-div", "figure"),
+
+    [Input(__package__ + "-button", "n_clicks")],
+    [
+        State('num_of_groups','value'),   
+        State('num_of_datapoints','value'),
+        State('mn_cost','value'),
+        State('mx_cost','value'),
+        State('gain','value'),
+        
+    ]
 )
-def button_click(n_update):
-    # Plot some random numbers on a chart
-    print("true")
-    res = {
-        "data": [
-            {
-                "x": [0 * random() - 1 for x in range(10)],
-                "y": [2 * random() - 1 for y in range(10)],
-                "mode": "markers",
-                "name": "Demo",
-            },
-        ],
-        "layout": {
-            "margin": {"l": 0, "r": 0, "t": 0, "b": 0, "pad": 0},
-            "xaxis": {"range": [-1, +1]},
-            "yaxis": {"range": [-1, +1]},
-        },
-    }
-    print(res)
-    return res
+def update_data(n_clicks,num_of_groups,num_of_datapoints,mn_cost,mx_cost,gain):
+    global var
+    var.df = generate_dataset(num_of_groups,num_of_datapoints,mn_cost,mx_cost,gain)
+    print(var.df)
+    return None
