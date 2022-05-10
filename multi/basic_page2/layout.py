@@ -1,78 +1,158 @@
-import dash_bootstrap_components as dbc
-from dash import dcc, html
+import base64
+import datetime
+import io
+import plotly.graph_objs as go
+import cufflinks as cf
 
-import utils
+import dash
+from dash.dependencies import Input, Output, State
+import dash_core_components as dcc
+import dash_html_components as html
+import dash_table
 
+import pandas as pd
+
+
+
+
+
+colors = {
+    "graphBackground": "#F5F5F5",
+    "background": "#ffffff",
+    "text": "#000000"
+}
 
 def layout(params):
-    # This function must return a layout for the page
-    # Use __package__ as a prefix to each id to make sure they are unique between pages
-
-    # Do something basic as a demo
-    return dbc.Row(
+    return dcc.Col(
         [
-            dbc.Col(
+            html.Div(
                 [
-                    dbc.Card(
-                        [
-                            dbc.CardHeader("Chart demo"),
-                            dbc.CardBody(
-                                [
-                                    dbc.Button(
-                                        "Click here to update chart...",
-                                        id=__package__ + "-button",
-                                        color="primary",
-                                    ),
-                                ],
-                            ),
-                        ],
+                    dcc.Upload(
+                        id="upload-data",
+                        children=html.Div(
+                            ["Drag and Drop or ", html.A("Select Files")]
+                        ),
+                        style={
+                            "width": "100%",
+                            "height": "60px",
+                            "lineHeight": "60px",
+                            "borderWidth": "1px",
+                            "borderStyle": "dashed",
+                            "borderRadius": "5px",
+                            "textAlign": "center",
+                            "margin": "10px",
+                        },
                     ),
-                    html.Br(),
-                    dbc.Card(
-                        [
-                            dbc.CardHeader("URL parameters table"),
-                            dbc.CardBody(
-                                [
-                                    html.A(
-                                        "dont Click here for an example",
-                                        href="?param1=42&param2=test",
-                                    ),
-                                    dbc.Table(
-                                        html.Tbody(
-                                            [html.Tr([html.Td(key), html.Td(value)]) for key, value in params.items()],
-                                            id=__package__ + "-table",
-                                        ),
-                                        bordered=True,
-                                        striped=True,
-                                    ),
-                                ],
-                            ),
-                        ],
-                    ),
-                ],
-                width=6,
+                    dcc.Graph(id="Mygraph"),
+                    html.Div(id="output-data-upload"),
+                ]
+            ),
+            dcc.Col(  # Tabs
+                html.Div(
+                    [
+                        dcc.Tabs(
+                            id="tabs_inp",
+                            value="vis",
+                            children=[
+                                dcc.Tab(label="Visualisation", value="vis"),
+                                dcc.Tab(label="Statistics", value="stat"),
+                                dcc.Tab(label="Cross_Table", value="crosstable"),
+                            ],
+                        ),
+                        html.Div(id="tabs-content-out"),
+                    ]
+                ),
                 class_name="pd-2",
             ),
-            dbc.Col(
-                [
-                    dbc.Card(
-                        [
-                            dbc.CardHeader("Some points on a chart"),
-                            dbc.CardBody(
-                                [
-                                    dcc.Graph(
-                                        figure=utils.empty_figure(),
-                                        id=__package__ + "-chart",
-                                        config={"displayModeBar": False},
-                                    )
-                                ],
-                            ),
-                        ],
-                    ),
-                ],
-                width=6,
-                class_name="pd-2",
-            ),
-        ],
-        class_name="mx-5 mt-5",
+        ]
     )
+
+def parse_data(contents, filename):
+    content_type, content_string = contents.split(',')
+
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV or TXT file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+        elif 'txt' or 'tsv' in filename:
+            # Assume that the user upl, delimiter = r'\s+'oaded an excel file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')), delimiter = r'\s+')
+    except Exception as e:
+        print(e)
+        return html.Div([
+            'There was an error processing this file.'
+        ])
+
+    return df
+from app import app
+
+@app.callback(Output('Mygraph', 'figure'),
+            [
+                Input('upload-data', 'contents'),
+                Input('upload-data', 'filename')
+            ])
+def update_graph(contents, filename):
+    fig = {
+        'layout': go.Layout(
+            plot_bgcolor=colors["graphBackground"],
+            paper_bgcolor=colors["graphBackground"])
+    }
+
+    if contents:
+        contents = contents[0]
+        filename = filename[0]
+        df = parse_data(contents, filename)
+        df = df.set_index(df.columns[0])
+        fig['data'] = df.iplot(asFigure=True, kind='scatter', mode='lines+markers', size=1)
+
+
+    return fig
+
+@app.callback(Output('output-data-upload', 'children'),
+            [
+                Input('upload-data', 'contents'),
+                Input('upload-data', 'filename')
+            ])
+def update_table(contents, filename):
+    table = html.Div()
+
+    if contents:
+        contents = contents[0]
+        filename = filename[0]
+        df = parse_data(contents, filename)
+
+        table = html.Div([
+            html.H5(filename),
+            dash_table.DataTable(
+                data=df.to_dict('rows'),
+                columns=[{'name': i, 'id': i} for i in df.columns]
+            ),
+            html.Hr(),
+            html.Div('Raw Content'),
+            html.Pre(contents[0:200] + '...', style={
+                'whiteSpace': 'pre-wrap',
+                'wordBreak': 'break-all'
+            })
+        ])
+
+    return table
+
+import dash
+from basic_page.tab1 import layout1
+from basic_page.tab2 import layout2
+from basic_page.tab3 import layout3
+@app.callback(Output('tabs-content-out', 'children'),
+              [Input('tabs_inp', 'value')])
+def render_content(tab):
+    if tab == 'vis':
+        return  layout1(var.df)
+    elif tab == 'stat':
+       return layout2
+    elif tab == 'crosstable':
+       return layout3
