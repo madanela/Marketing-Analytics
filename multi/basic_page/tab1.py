@@ -41,7 +41,8 @@ def layout1(data):
                                                     label = 'Menu',
                                                     color = 'black',
                                                     className = 'm-1'),
-                            ]),
+                            ],
+                            style = {'width' : '70%', 'margin-top' : '10px', 'margin-bottom' : '10px'}),
                         ]),
                     
                             # Block 4
