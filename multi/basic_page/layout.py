@@ -1,3 +1,4 @@
+from turtle import width
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
@@ -38,6 +39,7 @@ def layout(params):
                                                 "Gerenate",
                                                 id=__package__ + "-button",
                                                 color="primary",
+                                                style={'font-size': '16px', 'width': '180px'},
                                             )
                                         ]),
                                         # Block 2 
@@ -50,8 +52,11 @@ def layout(params):
                                                               id = 'num_of_groups'),
                                                 ],
                                                 className="mb-3",
+                                                
+
                                             )
-                                        ]),
+                                        ],
+                                        width=5),
                                         # Block 3
                                         dbc.Col([
                                             dbc.InputGroup(
@@ -62,8 +67,10 @@ def layout(params):
                                                               id = 'num_of_datapoints'),
                                                 ],
                                                 className="mb-3",
+                                                
                                             )
-                                        ]),
+                                        ],
+                                        width=5),
                                         # Block 4
                                          dbc.Col([
                                             dbc.InputGroup(
@@ -102,12 +109,13 @@ def layout(params):
                                 )
                             ),
                         ],
+                        style={"width": "100"},
                     ),
                     html.Br(),
                 ],
                 class_name="pd-2",
             ),
-            dbc.Row( # Tabs  
+            dbc.Col( # Tabs  
                 html.Div([
                     dcc.Tabs(id = "tabs_inp",value = 'vis',
                         children = [
@@ -115,7 +123,7 @@ def layout(params):
                             dcc.Tab(label="Statistics", value="stat"),
                             dcc.Tab(label="Cross_Table", value="crosstable"),
 
-                        ]
+                        ],
                     ),
                     html.Div(id='tabs-content-out')
                 ]),

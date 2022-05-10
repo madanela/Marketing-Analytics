@@ -41,9 +41,9 @@ def layout1(data):
                                                     label = 'Menu',
                                                     color = 'black',
                                                     className = 'm-1'),
-                                #  style={"display": "flex", "flexWrap": "wrap"},
-                            ]),
-                    ]),
+                            ],
+                            style = {'width' : '70%', 'margin-top' : '10px', 'margin-bottom' : '10px'}),
+                        ]),
                     
                             # Block 4
                             
@@ -57,7 +57,8 @@ def layout1(data):
                             ])
                         ]),
 
-                ])
+                    ])
+
 
 @app.callback(Output('graph-1-tabs-dcc','figure'),
 			[Input('minutes_play_integers','n_clicks'),
