@@ -2,6 +2,7 @@ from lib2to3.pgen2.pgen import DFAState
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 import plotly.express as px
+from regex import P
 import utils
 import pandas as pd
 import dash
@@ -12,6 +13,8 @@ from dash.dependencies import Input, Output, State
 from app import app
 import plotly
 import plotly.tools as tls
+import plotly.figure_factory as ff
+
 
 
 
@@ -31,7 +34,13 @@ def layout1(data):
     dbc.DropdownMenuItem("minutes_play_integers",id = "minutes_play_integers"),
     dbc.DropdownMenuItem("T-Test",id = "t-test"),
     dbc.DropdownMenuItem("Distribution of users", id = "dist_user"),
-    dbc.DropdownMenuItem("boot_means_diff",id = "boot_mean")
+    dbc.DropdownMenuItem("boot_means_diff",id = "boot_mean"),
+    dbc.DropdownMenuItem("Density of Treatment effect 7 days",id = "dens_treat_effect_day7"),
+    dbc.DropdownMenuItem("Density of Treatment effect 1 day",id = 'dens_treat_effect_day1'),
+    dbc.DropdownMenuItem("Conversation Rate 1 day",id = 'conv_rate_day1'),
+        dbc.DropdownMenuItem("Conversation Rate 7 days",id = 'conv_rate_day7'),
+
+
     ]
     return  dbc.Row([
                     html.Div([
@@ -68,7 +77,14 @@ def layout1(data):
 			[Input('minutes_play_integers','n_clicks'),
             Input('t-test','n_clicks'),
             Input('dist_user','n_clicks'),
-            Input('boot_mean',"n_clicks")],
+            Input('boot_mean',"n_clicks"),
+            Input('dens_treat_effect_day1','n_clicks'),
+            Input('dens_treat_effect_day7','n_clicks'),
+            Input('conv_rate_day1','n_clicks'),
+            Input('conv_rate_day7','n_clicks')
+
+
+            ],
 			)
 
 def update_graph_gg(*args):
@@ -107,8 +123,54 @@ def update_graph_gg(*args):
         boot_means = data.groupby('version')['minutes_play'].mean()
         boot_means = pd.DataFrame(boot_means)
         return px.line(boot_means)
+    elif button_id == 'dens_treat_effect_day7':
+        boot_7d = []
+
+        for i in range(100):
+            boot_mean = data.sample(frac=1,replace=True).groupby('version')['day_7_active'].mean() 
+            boot_7d.append(boot_mean)
+        boot_7d = pd.DataFrame(boot_7d)
+        lst = []
+        for each in boot_7d.columns:
+            if each!='control':
+                lst.append((boot_7d[each] - boot_7d['control'])/boot_7d['control'] *100)
+        fig = ff.create_distplot(lst, group_labels = boot_7d.columns[1:],show_hist=False)
+        fig.update_layout(title_text = "Density of 7 days active By treatment Groups")
+        return fig
+    elif button_id == 'dens_treat_effect_day1':
+        boot_1d = []
+
+        for i in range(100):
+            boot_mean = data.sample(frac=1,replace=True).groupby('version')['day_1_active'].mean() 
+            boot_1d.append(boot_mean)
+        boot_1d = pd.DataFrame(boot_1d)
+        lst = []
+        for each in boot_1d.columns:
+            if each!='control':
+                lst.append((boot_1d[each] - boot_1d['control'])/boot_1d['control'] *100)
+        fig = ff.create_distplot(lst, group_labels = boot_1d.columns[1:],show_hist=False)
+        fig.update_layout(title_text = "Density of 1 day active By treatment Groups")
+        return fig
+    elif button_id == 'conv_rate_day1':
+        fig = px.bar(x=data['version'],
+             y=data['day_1_active'],
+             color = data['version'],
+             labels = {"version": "Group",
+                       "day_1_active":"active"})
+        fig.update_layout(title_text = "Conversion Rate 1 day")
+        return fig
+    elif button_id == 'conv_rate_day7':
+        fig = px.bar(x=data['version'],
+             y=data['day_7_active'],
+             color = data['version'],
+             labels = {"version": "Group",
+                       "day_7_active":"active"})
+        fig.update_layout(title_text = "Conversion Rate 7 days")
+        return fig    
+    
     else:
         data['minutes_play_integers'] = round(data['minutes_play'])
         fig = px.bar(data, x='minutes_play_integers', y='user_id',title = "minutes play", height = 400)
+        
         return fig
     return px.bar()
