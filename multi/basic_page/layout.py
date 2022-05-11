@@ -132,29 +132,21 @@ def layout(params):
         ],  
         class_name="mx-5 mt-5",
     )
+    
+    
+
+import dash
+
+from data_gen.Generator import generate_dataset,generte_treatment_results
 from app import app
 from random import random
 from basic_page.tab1 import layout1
 from basic_page.tab2 import layout2
 from basic_page.tab3 import layout3
-@app.callback(Output('tabs-content-out', 'children'),
-              [Input('tabs_inp', 'value')])
-def render_content(tab):
-    if tab == 'vis':
-        return  layout1(var.df)
-    elif tab == 'stat':
-       return layout2
-    elif tab == 'crosstable':
-       return layout3
-
-
-import dash
-
-from data_gen.Generator import generate_dataset,generte_treatment_results
 ## generate button_click
 
 @app.callback(
-    Output("hidden-div", "figure"),
+    Output("hidden-div", "value"),
 
     [Input(__package__ + "-button", "n_clicks")],
     [
@@ -170,4 +162,21 @@ def update_data(n_clicks,num_of_groups,num_of_datapoints,mn_cost,mx_cost,gain):
     global var
     var.df = generate_dataset(num_of_groups,num_of_datapoints,mn_cost,mx_cost,gain)
     print(var.df)
-    return None
+    return None    
+    
+    
+    
+
+@app.callback(Output('tabs-content-out', 'children'),
+              [Input('tabs_inp', 'value'),
+               [Input(__package__ + "-button", "n_clicks")],
+               ])
+def render_content(tab,n_clicks):
+    if tab == 'vis':
+        return  layout1(var.df)
+    elif tab == 'stat':
+       return layout2
+    elif tab == 'crosstable':
+       return layout3
+
+

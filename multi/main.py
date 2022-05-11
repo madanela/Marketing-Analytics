@@ -30,7 +30,7 @@ app.layout = html.Div(
 # Use the URL to serve specific pages, and pass query parameters
 @app.callback(
     [
-        dash.dependencies.Output("page-header", "children"),
+        dash.dependencies.Output("page-header", "children") ,
         dash.dependencies.Output("page-content", "children"),
     ],
     [dash.dependencies.Input("url", "pathname")],
