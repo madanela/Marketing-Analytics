@@ -28,17 +28,16 @@ var = pd.DataFrame()
 def layout1(data):
     global var
     if not data.empty:
-       print("oops")
        var = data.copy()
     items = [
     dbc.DropdownMenuItem("minutes_play_integers",id = "minutes_play_integers"),
-    dbc.DropdownMenuItem("T-Test",id = "t-test"),
     dbc.DropdownMenuItem("Distribution of users", id = "dist_user"),
     dbc.DropdownMenuItem("boot_means_diff",id = "boot_mean"),
     dbc.DropdownMenuItem("Density of Treatment effect 7 days",id = "dens_treat_effect_day7"),
     dbc.DropdownMenuItem("Density of Treatment effect 1 day",id = 'dens_treat_effect_day1'),
     dbc.DropdownMenuItem("Conversation Rate 1 day",id = 'conv_rate_day1'),
-        dbc.DropdownMenuItem("Conversation Rate 7 days",id = 'conv_rate_day7'),
+    dbc.DropdownMenuItem("Conversation Rate 7 days",id = 'conv_rate_day7'),
+    dbc.DropdownMenuItem("Cost by Groups",id = "cost_group")
 
 
     ]
@@ -75,13 +74,13 @@ def layout1(data):
 
 @app.callback(Output('graph-1-tabs-dcc','figure'),
 			[Input('minutes_play_integers','n_clicks'),
-            Input('t-test','n_clicks'),
             Input('dist_user','n_clicks'),
             Input('boot_mean',"n_clicks"),
             Input('dens_treat_effect_day1','n_clicks'),
             Input('dens_treat_effect_day7','n_clicks'),
             Input('conv_rate_day1','n_clicks'),
-            Input('conv_rate_day7','n_clicks')
+            Input('conv_rate_day7','n_clicks'),
+            Input('cost_group','n_clicks')
 
 
             ],
@@ -105,13 +104,7 @@ def update_graph_gg(*args):
         data['minutes_play_integers'] = round(data['minutes_play'])
         fig = px.bar(data, x='minutes_play_integers', y='user_id',title = "minutes play", height = 400)
         return fig
-    elif button_id == 't-test':
-        
-        fig =  TTestIndPower().plot_power(dep_var='nobs',
-        nobs=np.array(range(5, 1000)),
-        effect_size=np.array([0.07, 0.3, 0.5]),
-        title='T - test results')
-        return tls.mpl_to_plotly(fig)
+
     elif button_id == 'dist_user':
 
         data['minutes_play_integers'] = round(data['minutes_play'])
@@ -167,7 +160,13 @@ def update_graph_gg(*args):
                        "day_7_active":"active"})
         fig.update_layout(title_text = "Conversion Rate 7 days")
         return fig    
-    
+    elif button_id == 'cost_group':
+       print( data.groupby('version')['cost'].max())
+       return px.bar(x = data['version'].unique(), 
+       y = data.groupby('version')['cost'].max(),
+       color=data['version'].unique(),
+       labels = {"x": "Group",
+                       "y":"Cost"})
     else:
         data['minutes_play_integers'] = round(data['minutes_play'])
         fig = px.bar(data, x='minutes_play_integers', y='user_id',title = "minutes play", height = 400)

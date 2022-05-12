@@ -175,8 +175,8 @@ def render_content(tab,n_clicks):
     if tab == 'vis':
         return  layout1(var.df)
     elif tab == 'stat':
-       return layout2
+       return layout2(var.df)
     elif tab == 'crosstable':
-       return layout3
+       return layout3(var.df)
 
 

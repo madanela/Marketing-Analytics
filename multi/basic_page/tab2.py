@@ -3,8 +3,7 @@ from dash import dcc, html
 
 import utils
 
-
-layout2 = dbc.Row(
+layoutt2 = dbc.Row(
         [
              dbc.Col([
                     dbc.Label("Choose Which option to use"),
@@ -21,3 +20,5 @@ layout2 = dbc.Row(
         ],
         class_name="mx-5 mt-5",
     )
+def layout2(data):
+    return layoutt2
