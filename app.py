@@ -13,6 +13,7 @@ css = [getattr(dbc.themes, theme.upper()), *css] if theme else css
 
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+server=app.server
 # Set the page title
 app.title = config.get("title", "Dash")
 # This setting is required for multi-page views
